@@ -1,138 +1,70 @@
-# Real-Time Event Check-In App (Full Stack Assignment)
+# Real-Time Event Check-In App  
 
-A minimal, clean reference implementation of the assignment:
-
-- **Backend:** Node.js, TypeScript, GraphQL (Apollo Server), Prisma (PostgreSQL), Socket.io
-- **Frontend:** React Native (Expo), TypeScript, Zustand, TanStack Query, socket.io-client, graphql-request
-
-> Focused on clarity, type-safety, and real-time attendee updates.
+A minimal full-stack application for **real-time attendee check-ins** during events.  
+This project demonstrates backend–frontend integration with WebSockets for live updates.  
 
 ---
 
-## Monorepo Structure
+## 🚀 Tech Stack  
 
-```
-realtime-event-checkin/
-  backend/
-  frontend/
-```
+**Backend**  
+- Node.js, TypeScript  
+- GraphQL (Apollo Server)  
+- Prisma ORM (PostgreSQL)  
+- Socket.io  
+
+**Frontend**  
+- React Native (Expo)  
+- TypeScript  
+- Zustand (state management)  
+- TanStack Query  
+- GraphQL Request  
+- socket.io-client  
 
 ---
 
-## Requirements to Download & Run
+## 📂 Monorepo Structure  
 
-### Install Global Prereqs
 
-- **Node.js** v18+ (https://nodejs.org)
-- **pnpm** (recommended) OR npm/yarn  
-  Install pnpm: `npm i -g pnpm`
-- **PostgreSQL** 14+ (https://www.postgresql.org/download/)
-- **Expo CLI**: `npm i -g expo` (optional; the local `npx expo` also works)
+---
 
-### Prepare a Postgres database
+## ⚙️ Requirements  
 
-Create a database (e.g. `realtime_events`), and note the connection URL:
-```
+- **Node.js** v18+ → [Download](https://nodejs.org)  
+- **pnpm** (recommended) → `npm i -g pnpm`  
+- **PostgreSQL** 14+ → [Download](https://www.postgresql.org/download/)  
+- **Expo CLI** → `npm i -g expo` (or use `npx expo`)  
+
+---
+
+## 🗄️ Database Setup  
+
+1. Create a Postgres database (e.g. `realtime_events`).  
+2. Copy the connection string:  
+
+```env
 postgresql://<USER>:<PASSWORD>@localhost:5432/realtime_events?schema=public
-```
 
----
 
-## Backend Setup (http://localhost:4000)
 
-```
-cd backend
-cp .env.example .env
-# edit .env and set DATABASE_URL + JWT_SECRET
 
-# install deps
-pnpm install
 
-# generate prisma client and create tables
-pnpm prisma:generate
-pnpm prisma:migrate
 
-# seed sample users & events
-pnpm prisma:seed
 
-# start dev server
-pnpm dev
-```
-- GraphQL endpoint: `http://localhost:4000/graphql`
-- Socket.io endpoint: `http://localhost:4000`
-- Mock auth: pass `Authorization: Bearer <token>` header. See example tokens in `.env.example` and below.
 
-**Example tokens**
-- `user1` → `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.user1.signature`
-- `user2` → `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.user2.signature`
-> Any token that ends with `.user1.signature` or `.user2.signature` works (the server only parses the middle part).
 
----
+⚙️ Working Process
 
-## Frontend Setup (Expo)
+User Opens App → The frontend (React Native) connects to the backend using GraphQL and WebSockets.
 
-```
-cd frontend
-cp .env.example .env
-# edit if your backend host/port differs
+Attendee Check-In → When a user checks in, the app sends the request to the backend.
 
-pnpm install
-pnpm start
-```
-When prompted, choose to run in an emulator/simulator or scan the QR code (Expo Go).
+Backend Processing →
 
-**Testing Flow**
-1. Open the app → login with one of the example tokens above (paste the token string).
-2. Open Event List → tap an event.
-3. Press **Join**.
-4. Open a second device/emulator (or browser via Expo Web) and log in as the other user.
-5. Navigate to the same event; you should see the attendee list update **instantly**.
+Prisma saves the check-in data to PostgreSQL.
 
----
+Socket.io broadcasts the new check-in to all connected clients.
 
-## GraphQL Contract
+Real-Time Updates → Other attendees instantly see the updated attendee list without refreshing.
 
-```graphql
-type Query {
-  events: [Event!]!
-  me: User
-}
-
-type Mutation {
-  joinEvent(eventId: ID!): Event!
-}
-
-type User {
-  id: ID!
-  name: String!
-  email: String!
-}
-
-type Event {
-  id: ID!
-  name: String!
-  location: String!
-  startTime: String!
-  attendees: [User!]!
-}
-```
-
----
-
-## Notes on Real-Time
-
-- Each event has a Socket.io room with id equal to the event id.
-- When a user opens the Event Detail page, the client emits `joinEventRoom` with `{ eventId }`.
-- When someone runs `joinEvent`, the server:
-  1. Adds the user to the event via Prisma.
-  2. Emits `attendeeUpdate` to that event room with the latest attendee list.
-
----
-
-## Submission
-
-- Push this repo to GitHub.
-- Ensure `README.md` is clear.
-- Email link to `teamdetrator@gmail.com` with subject **FullStack Assignment**.
-
-Good luck!
+Query Data → The app can also fetch past check-ins and event details via GraphQL queries.
